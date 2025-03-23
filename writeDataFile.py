@@ -17,6 +17,8 @@ def parse_csv_and_send(file_path: str):
         for row in csv_reader:
             # Join the row as a string (comma-separated values)
             row_string = ','.join(row)
+            while len(row_string)<2:
+                row_string = "0"+row_string
             combinedRows = combinedRows + row_string
             rowCounter = rowCounter + 1 
 
