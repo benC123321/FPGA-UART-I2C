@@ -1,6 +1,7 @@
 import csv
 import eeprom_functions as eeprom
 import time
+import argparse 
 
 def parse_csv_and_send(file_path: str):
     with open(file_path, mode='r', newline='') as file:
@@ -36,6 +37,13 @@ def parse_csv_and_send(file_path: str):
 # Example usage
 eeprom.open_serial_connection()
 time.sleep(.5)
-file_path = 'testWriteData.csv'  # Replace with your CSV file path
-parse_csv_and_send(file_path)
+parser = argparse.ArgumentParser(description="Parse a CSV file and send each row to send_data function.")
+parser.add_argument("csv_file", help="The path to the CSV file to be processed")
+
+args = parser.parse_args()
+
+# Call the function with the file path argument
+parse_csv_and_send(args.csv_file)
+# file_path = 'testWriteData.csv'  # Replace with your CSV file path
+# parse_csv_and_send(file_path)
 #eeprom.close_serial_connection()

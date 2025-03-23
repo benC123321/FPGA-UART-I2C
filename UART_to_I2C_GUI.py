@@ -7,6 +7,8 @@ import time
 # Global variable to hold the serial connection
 ser = None
 
+WRITE_TO_OUTPUT_REGS="69"
+
 data = ''
 
 def ASCII_to_HEX(my_string):
@@ -111,29 +113,59 @@ def open_serial_connection():
     except Exception as e:
         messagebox.showerror("Error", f"Failed to open serial port: {e}")
 
-# Function to read data from the serial port
+# # Function to read data from the serial port
+# def read_from_serial(ser):
+#     data = ''
+#     while True:
+#         if ser.in_waiting > 0:
+#             # Read the serial data
+#             data = data + ser.readline().decode('utf-8')#.strip()
+#             if data.find('Z')!=-1:
+#                 # Display the data in the text box
+#                 data = HEX_to_ASCII(data)
+#                 text_box.insert(tk.END, "Received: " + data + '\n')
+#                 text_box.yview(tk.END)  # Scroll to the latest data
+#                 data = ''
+#         time.sleep(0.1)
+
+# Function to read data from the serial port OG
 def read_from_serial(ser):
-    data = ''
     while True:
         if ser.in_waiting > 0:
             # Read the serial data
-            data = data + ser.readline().decode('utf-8')#.strip()
-            if data.find('Z')!=-1:
+            data = HEX_to_ASCII(ser.readline().decode('utf-8'))
+            # data = ser.readline().decode('utf-8')#.strip()
+            if data:
                 # Display the data in the text box
-                data = HEX_to_ASCII(data)
-                text_box.insert(tk.END, "Received: " + data + '\n')
+                text_box.insert(tk.END, 'Received: ' + data + '\n')
                 text_box.yview(tk.END)  # Scroll to the latest data
-                data = ''
         time.sleep(0.1)
 
 # Function to send data to the serial port
 def send_data():
     if ser and ser.is_open:
-        number = (float(send_entry.get())/3300)*4095
-        number = int(number)
-        number = hex(number)
-        numberString = number[2:]
-        message = ASCII_to_HEX("000669"+numberString) + 'Z'  # Z to end message
+        ##
+        ## calculate and format UART message to send 
+        ##
+
+        ##
+        ## Get Read or Write
+        ##
+
+        command_string = command_combo.get()
+        if command_string == "Read":
+            command_string = "ff"
+        else:
+            command_string = "00"
+
+        ##
+        ## Calculate output voltage message
+        ##
+        # number = (float(send_entry.get())/3300)*4095
+        # number = int(number)
+        # number = hex(number)
+        # numberString = number[2:]     //address is 0x60 // start write message with 69
+        message = ASCII_to_HEX(command_string + send_address_entry.get()+send_entry.get()) + 'Z'  # using ASCII 'Z' to mark end of message to FPGA 
         if message:
             # Send the message through the serial port
             ser.write(message.encode('utf-8'))
@@ -192,27 +224,27 @@ send_entry_label.pack(padx=5)
 send_entry = tk.Entry(root, width=40)
 send_entry.pack(padx=5)
 
-# # Entry widget to input I2C Address
-# send_address_entry_label = tk.Label(root, text="Address of target in HEX:")
-# send_address_entry_label.pack(padx=5)
-# send_address_entry = tk.Entry(root, width=40)
-# send_address_entry.pack(padx=5)
+# Entry widget to input I2C Address
+send_address_entry_label = tk.Label(root, text="Address of target in HEX:")
+send_address_entry_label.pack(padx=5)
+send_address_entry = tk.Entry(root, width=40)
+send_address_entry.pack(padx=5)
 
-# # Entry widget to input I2C Address
-# bytes_num_label = tk.Label(root, text="Number of bytes to read in HEX (ignored during write):")
-# bytes_num_label.pack(padx=5)
-# bytes_num = tk.Entry(root, width=40)
-# bytes_num.pack(padx=5)
+# Entry widget to input I2C Address
+bytes_num_label = tk.Label(root, text="Number of bytes to read in HEX (ignored during write):")
+bytes_num_label.pack(padx=5)
+bytes_num = tk.Entry(root, width=40)
+bytes_num.pack(padx=5)
 
-# # Baud rate selection
-# command_label = tk.Label(root, text="Select Read/Write:")
-# command_label.pack(pady=5)
+# Read/Write Selection
+command_label = tk.Label(root, text="Select Read/Write:")
+command_label.pack(pady=5)
 
-# # Dropdown for baud rates
-# commands = ["Read","Write"]
-# command_combo = ttk.Combobox(root, values=commands)
-# command_combo.set("Read")  # Default to 9600
-# command_combo.pack(pady=5)
+# Dropdown for read/write
+commands = ["Read","Write"]
+command_combo = ttk.Combobox(root, values=commands)
+command_combo.set("Read")  # Default to 9600
+command_combo.pack(pady=5)
 
 # Button to send data over the serial port
 send_button = tk.Button(root, text="Send", command=send_data)
