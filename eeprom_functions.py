@@ -15,6 +15,8 @@ readData = ""
 readDataReady = 0
 numData = 0 
 
+returnArray=[]
+
 # Global variable to hold the serial connection
 ser = None
 
@@ -29,6 +31,7 @@ def read(address, num_bytes):
     # need address copy to iterate as we read more bytes
     addressCopy = address
     # array for storing read data
+    global returnArray
     returnArray = []
     # counter for number of bytes to read
     num_bytes_counter = 0
@@ -54,23 +57,13 @@ def read(address, num_bytes):
         # This function will send the UART message indicating how many bytes to read from I2C target
         send_data("Read",addrStr,str(myNumBytes))
 
-        ## Wait for UART response
-        while readDataReady==0:
-            poll_counter = poll_counter + 1
+        time.sleep(.25)
 
-        print(readData)
-        readDataReady = 0
-        # print(readData)
-        # print("Times in loop"+str(poll_counter))
-        # format data as expected by GUI code
-        counter = 0
-        while counter < len(readData):
-            returnArray.append(int(readData[counter:counter+2],16))
-            counter = counter + 2
         num_bytes_counter = num_bytes_counter + 8
         addressCopy = addressCopy + myNumBytes
-        readData = ""
-    print(returnArray)
+        # readData = ""
+    # print(returnArray)
+    time.sleep(.5)
     return returnArray
 
 def write(address, data):
@@ -135,10 +128,15 @@ def read_from_serial(ser):
                 # assign data to global variable readData, then toggle readDataReady which is polled by read function
                 global readData
                 global readDataReady
+                global returnArray
                 readData = readData + data
                 # check to see if received expected number of bytes
-                if len(readData) == numData:
-                    readDataReady = 1
+                if len(readData) == 2:
+                    counter = 0
+                    while counter < len(readData):
+                        returnArray.append(int(readData[counter:counter+2],16))
+                        counter = counter + 2
+                    readData = ""
         time.sleep(.01)
 
 

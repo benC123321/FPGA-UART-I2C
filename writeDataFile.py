@@ -30,7 +30,7 @@ def parse_csv_and_send(file_path: str):
                 # Call the send_data function with the row string
                 # print(combinedRows)
                 eeprom.send_data("Write",addrStr,combinedRows.lower())
-                print(address)
+                # print(address)
                 address = address + 8
                 combinedRows = ""
                 rowCounter = 0
