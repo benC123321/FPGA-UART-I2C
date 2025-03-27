@@ -130,13 +130,16 @@ def read_from_serial(ser):
                 global readDataReady
                 global returnArray
                 readData = readData + data
+                # print(readData)
                 # check to see if received expected number of bytes
-                if len(readData) == 2:
-                    counter = 0
-                    while counter < len(readData):
-                        returnArray.append(int(readData[counter:counter+2],16))
-                        counter = counter + 2
-                    readData = ""
+                if (len(readData)%2==0):
+                    if len(readData)>0:
+                        # print(len(readData))
+                        counter = 0
+                        while counter < len(readData):
+                            returnArray.append(int(readData[counter:counter+2],16))
+                            counter = counter + 2
+                        readData = ""
         time.sleep(.01)
 
 
